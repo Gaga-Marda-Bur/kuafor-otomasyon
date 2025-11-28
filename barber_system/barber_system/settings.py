@@ -123,3 +123,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Custom Admin Title
+ADMIN_SITE_HEADER = "Kuaför & Berber Yönetim Sistemi"
+ADMIN_SITE_TITLE = "Kuaför Otomasyon"
+ADMIN_INDEX_TITLE = "Yönetim Paneli"
