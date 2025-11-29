@@ -6,7 +6,10 @@ class Customer(models.Model):
     phone = models.CharField(max_length=20)
 
     def __str__(self):
-        return self.user.get_full_name() or self.user.username
+        name = self.user.get_full_name()
+        if name.strip():
+            return name
+        return f"Müşteri #{self.id} ({self.user.username})"
 
 
 class Employee(models.Model):
@@ -19,12 +22,13 @@ class Employee(models.Model):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     phone = models.CharField(max_length=20)
 
-    # Uzmanlıklar
     skills = models.CharField(max_length=255, blank=True)
 
-    # Çalışanın uygun olduğu saatler
     availability_start = models.TimeField(null=True, blank=True)
     availability_end = models.TimeField(null=True, blank=True)
+
+    # ManyToManyField string ile tanımlanıyor
+    services = models.ManyToManyField('salon.Service', blank=True)
 
     def __str__(self):
         return f"{self.user.get_full_name()} ({self.role})"

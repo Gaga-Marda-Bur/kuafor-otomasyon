@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Randevu Oluştur{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto p-6 bg-white shadow rounded">
+    <h2 class="text-xl font-bold mb-4">Randevu Oluştur</h2>
+
+    <form method="POST" id="appointment-form" class="space-y-4">
+        {% csrf_token %}
+
+        <!-- Hizmet -->
+        <div>
+            <label for="service" class="block font-semibold">Hizmet:</label>
+            <select id="service" name="service" class="w-full border p-2 rounded"
+                hx-get="{% url 'filter_employees' %}"
+                hx-target="#employee"
+                hx-include="#service">
+                <option value="">Seçiniz</option>
+                {% for service in services %}
+                <option value="{{ service.id }}">{{ service.name }} ({{ service.duration }} dk - {{ service.price }} TL)</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Çalışan -->
+        <div>
+            <label for="employee" class="block font-semibold">Çalışan:</label>
+            <select id="employee" name="employee" class="w-full border p-2 rounded" disabled
+                hx-get="{% url 'available_times' %}"
+                hx-target="#time"
+                hx-include="#employee, #date, #service">
+                <option value="">Önce hizmet seçin</option>
+            </select>
+        </div>
+
+        <!-- Tarih -->
+        <div>
+            <label for="date" class="block font-semibold">Tarih:</label>
+            <input type="date" id="date" name="date" class="w-full border p-2 rounded">
+        </div>
+
+        <!-- Saat -->
+        <div>
+            <label for="time" class="block font-semibold">Saat:</label>
+            <select id="time" name="time" class="w-full border p-2 rounded" disabled>
+                <option value="">Önce çalışan ve tarih seçin</option>
+            </select>
+        </div>
+
+        <button type="submit" class="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600 transition">Randevu Oluştur</button>
+    </form>
+</div>
+{% endblock %}

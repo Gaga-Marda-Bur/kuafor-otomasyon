@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ salon.name }}{% endblock %}
+
+{% block content %}
+<div class="bg-white p-6 shadow rounded">
+    <h2 class="text-2xl font-bold">{{ salon.name }}</h2>
+    <p class="mt-2">Çalışma Saatleri: {{ salon.working_start }} - {{ salon.working_end }}</p>
+    <p class="mt-2 font-semibold">Çalışanlar:</p>
+    <ul class="list-disc ml-6">
+        {% for emp in salon.employees.all %}
+        <li>{{ emp.user.get_full_name }} - {{ emp.role }}</li>
+        {% empty %}
+        <li>Henüz çalışan eklenmemiş</li>
+        {% endfor %}
+    </ul>
+
+    <p class="mt-2 font-semibold">Hizmetler:</p>
+    <ul class="list-disc ml-6">
+        {% for service in salon.service_set.all %}
+        <li>{{ service.name }} ({{ service.duration }} dk - {{ service.price }} TL)</li>
+        {% empty %}
+        <li>Henüz hizmet eklenmemiş</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

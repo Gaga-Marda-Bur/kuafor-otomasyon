@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kuaför Otomasyon{% endblock %}</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTMX CDN -->
+    <script src="https://unpkg.com/htmx.org@1.9.3"></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <!-- Navbar -->
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="{% url 'home' %}" class="font-bold text-lg">Kuaför Otomasyon</a>
+            <div>
+                {% if user.is_authenticated %}
+                    <span class="mr-4">Hoşgeldin, {{ user.get_full_name }}</span>
+                    <a href="{% url 'logout' %}" class="hover:underline">Çıkış</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="mr-4 hover:underline">Giriş</a>
+                    <a href="{% url 'register' %}" class="hover:underline">Kayıt</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Ana İçerik -->
+    <main class="container mx-auto py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white text-center p-4 mt-10">
+        &copy; {{ year }} Kuaför Otomasyon. Tüm hakları saklıdır.
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
