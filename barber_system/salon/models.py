@@ -1,6 +1,5 @@
 from django.db import models
 from accounts.models import Employee
-from barber_system.appointment.models import Appointment
 
 class Salon(models.Model):
     name = models.CharField(max_length=100)
@@ -14,7 +13,8 @@ class Salon(models.Model):
 
     def get_available_employees(self, service, date, time):
         """Belirli bir hizmet, tarih ve saat için uygun çalışanları getir"""
-        from appointment.models import add_minutes
+        
+        from appointment.models import add_minutes, Appointment
         
         end_time = add_minutes(time, service.duration)
         
@@ -46,10 +46,29 @@ class Salon(models.Model):
                 available_employees.append(employee)
         
         return available_employees
+    
+    def add_employee(self, employee):
+        """OOP'deki add_employee methodu"""
+        self.employees.add(employee)
+    
+    def add_service(self, service):
+        """OOP'deki add_service methodu"""
+        # Service zaten salon ile ilişkili (ForeignKey)
+        service.salon = self
+        service.save()
+    
+    @property
+    def salon_name(self):
+        """OOP'deki salon_name property'si"""
+        return self.name
+    
+    @property
+    def working_hours(self):
+        """OOP'deki working_hours property'si"""
+        return (self.working_start, self.working_end)
 
     def __str__(self):
         return self.name
-
 
 
 class Service(models.Model):

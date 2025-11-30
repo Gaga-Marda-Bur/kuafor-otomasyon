@@ -6,9 +6,10 @@ class EmployeeAdmin(admin.ModelAdmin):
     list_display = ("get_name", "role", "phone", "availability_start", "availability_end", "skills")
     search_fields = ("user__first_name", "user__last_name", "role")
     list_filter = ("role",)
+    filter_horizontal = ('services',) 
 
     def get_name(self, obj):
-        return obj.user.get_full_name()
+        return obj.user.get_full_name() or obj.user.username
     get_name.short_description = "Çalışan Adı"
 
 
@@ -17,7 +18,7 @@ class CustomerAdmin(admin.ModelAdmin):
     search_fields = ("user__first_name", "user__last_name")
 
     def get_name(self, obj):
-        return obj.user.get_full_name()
+        return obj.user.username or obj.user.get_full_name()
     get_name.short_description = "Müşteri"
 
 class ManagerAdmin(admin.ModelAdmin):

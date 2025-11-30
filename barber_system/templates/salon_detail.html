@@ -1,27 +1,211 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ salon.name }}{% endblock %}
+{% block title %}{{ salon.name }} - SAÜ Kuaför{% endblock %}
+
+{% block breadcrumb_items %}
+<span class="text-sakarya-blue-400">/ </span>
+<a href="{% url 'home' %}" class="text-sakarya-blue-600 hover:text-sakarya-blue-800 transition-colors">Salonlar</a>
+<span class="text-sakarya-blue-400"> / {{ salon.name }}</span>
+{% endblock %}
 
 {% block content %}
-<div class="bg-white p-6 shadow rounded">
-    <h2 class="text-2xl font-bold">{{ salon.name }}</h2>
-    <p class="mt-2">Çalışma Saatleri: {{ salon.working_start }} - {{ salon.working_end }}</p>
-    <p class="mt-2 font-semibold">Çalışanlar:</p>
-    <ul class="list-disc ml-6">
-        {% for emp in salon.employees.all %}
-        <li>{{ emp.user.get_full_name }} - {{ emp.role }}</li>
-        {% empty %}
-        <li>Henüz çalışan eklenmemiş</li>
-        {% endfor %}
-    </ul>
+<div class="max-w-6xl mx-auto">
+    <!-- Salon Header -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+        <div class="bg-gradient-to-r from-sakarya-blue-600 to-sakarya-blue-800 p-8 text-white">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold mb-2">{{ salon.name }}</h1>
+                    <div class="flex items-center space-x-4 text-sakarya-blue-100">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>{{ salon.working_start|time:"H:i" }} - {{ salon.working_end|time:"H:i" }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <span>{{ salon.employees.count }} çalışan</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'appointment_create' %}?salon={{ salon.id }}" 
+                   class="mt-4 md:mt-0 bg-sakarya-gold-500 hover:bg-sakarya-gold-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    🗓️ Bu Salondan Randevu Al
+                </a>
+            </div>
+        </div>
+    </div>
 
-    <p class="mt-2 font-semibold">Hizmetler:</p>
-    <ul class="list-disc ml-6">
-        {% for service in salon.service_set.all %}
-        <li>{{ service.name }} ({{ service.duration }} dk - {{ service.price }} TL)</li>
-        {% empty %}
-        <li>Henüz hizmet eklenmemiş</li>
-        {% endfor %}
-    </ul>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Sol Kolon - Çalışanlar -->
+        <div class="lg:col-span-2">
+            <!-- Çalışanlar Section -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-sakarya-blue-800">Çalışanlar</h2>
+                    <span class="bg-sakarya-blue-100 text-sakarya-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                        {{ salon.employees.count }} kişi
+                    </span>
+                </div>
+
+                {% if salon.employees.all %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for emp in salon.employees.all %}
+                    <div class="border border-sakarya-blue-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+                        <div class="flex items-start space-x-4">
+                            <!-- Çalışan Avatar -->
+                            <div class="flex-shrink-0">
+                                <div class="w-16 h-16 bg-sakarya-blue-100 rounded-full flex items-center justify-center">
+                                    <span class="text-sakarya-blue-600 text-lg font-semibold">
+                                        {{ emp.user.first_name|first }}{{ emp.user.last_name|first }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Çalışan Bilgileri -->
+                            <div class="flex-grow">
+                                <h3 class="font-semibold text-lg text-sakarya-blue-800">
+                                    {{ emp.user.get_full_name|default:emp.user.username }}
+                                </h3>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <span class="bg-sakarya-blue-500 text-white px-2 py-1 rounded text-xs">
+                                        {{ emp.get_role_display }}
+                                    </span>
+                                    {% if emp.availability_start and emp.availability_end %}
+                                    <span class="text-xs text-gray-600">
+                                        {{ emp.availability_start|time:"H:i" }}-{{ emp.availability_end|time:"H:i" }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if emp.skills %}
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-600">{{ emp.skills }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Çalışan Servisleri -->
+                                {% if emp.services.all %}
+                                <div class="mt-3">
+                                    <h4 class="text-sm font-semibold text-sakarya-blue-700 mb-1">Uzmanlık Alanları:</h4>
+                                    <div class="flex flex-wrap gap-1">
+                                        {% for service in emp.services.all|slice:":3" %}
+                                        <span class="bg-sakarya-gold-50 text-sakarya-gold-700 px-2 py-1 rounded text-xs">
+                                            {{ service.name }}
+                                        </span>
+                                        {% endfor %}
+                                        {% if emp.services.count > 3 %}
+                                        <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                                            +{{ emp.services.count|add:"-3" }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                    </svg>
+                    <p class="text-lg">Bu salonda henüz çalışan bulunmuyor.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Salon Hakkında -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-sakarya-blue-800 mb-4">Salon Hakkında</h2>
+                <div class="space-y-4 text-gray-700">
+                    <p>Sakarya Üniversitesi bünyesinde hizmet veren {{ salon.name }}, öğrenci ve personelimize kaliteli kuaförlük hizmetleri sunmaktadır.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-sakarya-blue-100 p-2 rounded-lg">
+                                <svg class="w-5 h-5 text-sakarya-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Çalışma Saatleri</p>
+                                <p class="text-sm text-gray-600">{{ salon.working_start|time:"H:i" }} - {{ salon.working_end|time:"H:i" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-sakarya-blue-100 p-2 rounded-lg">
+                                <svg class="w-5 h-5 text-sakarya-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Konum</p>
+                                <p class="text-sm text-gray-600">Sakarya Üniversitesi Yerleşkesi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Kolon - Hizmetler -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-sakarya-blue-800">Hizmetler</h2>
+                    <span class="bg-sakarya-gold-100 text-sakarya-gold-700 px-3 py-1 rounded-full text-sm font-medium">
+                        {{ salon.service_set.count }} hizmet
+                    </span>
+                </div>
+
+                {% if salon.service_set.all %}
+                <div class="space-y-4">
+                    {% for service in salon.service_set.all %}
+                    <div class="border border-sakarya-blue-100 rounded-lg p-4 hover:border-sakarya-blue-300 transition-colors">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-semibold text-sakarya-blue-800">{{ service.name }}</h3>
+                            <span class="bg-sakarya-blue-500 text-white px-2 py-1 rounded text-sm">
+                                {{ service.duration }} dk
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-bold text-sakarya-gold-600">{{ service.price }} TL</span>
+                            <a href="{% url 'appointment_create' %}?salon={{ salon.id }}&service={{ service.id }}" 
+                               class="bg-sakarya-blue-500 hover:bg-sakarya-blue-600 text-white px-3 py-1 rounded text-sm transition-colors">
+                                Randevu Al
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <p class="text-lg">Bu salonda henüz hizmet bulunmuyor.</p>
+                </div>
+                {% endif %}
+
+                <!-- Hızlı Randevu Butonu -->
+                <div class="mt-8 p-4 bg-sakarya-blue-50 rounded-lg border border-sakarya-blue-200">
+                    <h3 class="font-semibold text-sakarya-blue-800 mb-2">Hemen Randevu Oluşturun</h3>
+                    <p class="text-sm text-gray-600 mb-4">İstediğiniz hizmet ve çalışanı seçerek randevunuzu oluşturun.</p>
+                    <a href="{% url 'appointment_create' %}?salon={{ salon.id }}" 
+                       class="w-full bg-sakarya-gold-500 hover:bg-sakarya-gold-600 text-white py-3 rounded-lg font-semibold transition-colors text-center block">
+                        Randevu Oluştur
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
