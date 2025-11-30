@@ -27,9 +27,26 @@ class AppointmentForm(forms.ModelForm):
 
 class AppointmentAdmin(admin.ModelAdmin):
     form = AppointmentForm
-    list_display = ("customer", "service", "employee", "date", "time", "status")
-    list_filter = ("status", "date", "employee", "service")
-    search_fields = ("customer__user__first_name", "customer__user__last_name")
+    list_display = ("customer", "service", "employee", "date", "time", "status", "created_at")
+    list_filter = ("status", "date", "employee", "service", "employee__salon")
+    search_fields = ("customer__user__first_name", "customer__user__last_name", "employee__user__first_name")
+    list_editable = ("status",)  #Doğrudan listeden düzenleme
+    actions = ["approve_selected", "reject_selected"]  #Toplu aksiyonlar
+    
+    def approve_selected(self, request, queryset):
+        """Seçili randevuları onayla"""
+        updated = queryset.update(status='approved')
+        self.message_user(request, f"{updated} randevu onaylandı.")
+    approve_selected.short_description = "Seçili randevuları onayla"
+    
+    def reject_selected(self, request, queryset):
+        """Seçili randevuları reddet"""
+        updated = queryset.update(status='rejected')
+        self.message_user(request, f"{updated} randevu reddedildi.")
+    reject_selected.short_description = "Seçili randevuları reddet"
+    
+    # Tarih bazlı filtreleme
+    date_hierarchy = 'date'
 
 
 admin.site.register(Appointment, AppointmentAdmin)

@@ -4,6 +4,7 @@ from salon.models import Service
 from accounts.models import Employee
 from django.http import JsonResponse
 from datetime import datetime
+from .utils import get_available_times
 
 def appointment_create(request):
     services = Service.objects.all()
@@ -40,32 +41,34 @@ def filter_employees(request):
     return JsonResponse({'html': html})
 
 
+
+
 def available_times(request):
     employee_id = request.GET.get('employee')
     date_str = request.GET.get('date')
+    service_id = request.GET.get('service')  # Servis ID'sini de almalıyız
 
-    employee = Employee.objects.get(id=employee_id)
-    date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    # Eğer gerekli veriler yoksa boş dön
+    if not (employee_id and date_str and service_id):
+        return JsonResponse({'html': '<option value="">Lütfen seçimleri tamamlayın</option>'})
 
-    # Çalışanın uygun saatleri
-    start = employee.availability_start
-    end = employee.availability_end
+    try:
+        employee = Employee.objects.get(id=employee_id)
+        service = Service.objects.get(id=service_id)
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
 
-    # Mevcut randevular
-    appointments = Appointment.objects.filter(employee=employee, date=date)
-    booked_times = [appt.time.strftime("%H:%M") for appt in appointments]
+        # Senin yazdığın o harika utils fonksiyonunu burada kullanıyoruz
+        # Bu fonksiyon dolu saatleri çıkarıp bize sadece uygun saatleri verecek.
+        available_slots = get_available_times(employee, date_obj, service.duration)
 
-    # Örnek: her 30 dakikada bir saat dilimi
-    times = []
-    t = datetime.combine(date, start)
-    while t.time() <= end:
-        time_str = t.time().strftime("%H:%M")
-        if time_str not in booked_times:
-            times.append(time_str)
-        t = t.replace(minute=t.minute + 30)
-
-    html = '<option value="">Seçiniz</option>'
-    for t in times:
-        html += f'<option value="{t}">{t}</option>'
+        html = '<option value="">Saat Seçiniz</option>'
+        for slot in available_slots:
+            # slot bir time objesi olduğu için string'e çeviriyoruz
+            time_str = slot.strftime("%H:%M")
+            html += f'<option value="{time_str}">{time_str}</option>'
+            
+    except Exception as e:
+        print(f"Hata: {e}")
+        html = '<option value="">Hata oluştu</option>'
 
     return JsonResponse({'html': html})

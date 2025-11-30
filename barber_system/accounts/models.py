@@ -37,6 +37,7 @@ class Employee(models.Model):
 class Manager(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone = models.CharField(max_length=20)
+    salon = models.ForeignKey('salon.Salon', on_delete=models.CASCADE, null=True, blank=True)  # Yeni alan
 
     def __str__(self):
-        return f"Yönetici: {self.user.get_full_name()}"
+        return f"Yönetici: {self.user.get_full_name()} - {self.salon.name if self.salon else 'Salon Atanmamış'}"

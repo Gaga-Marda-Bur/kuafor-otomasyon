@@ -17,6 +17,8 @@ class Appointment(models.Model):
         ('pending', 'Beklemede'),
         ('approved', 'Onaylandı'),
         ('rejected', 'Reddedildi'),
+        ('completed', 'Tamamlandı'),
+        ('cancelled', 'İptal Edildi'),
     ]
 
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
@@ -27,6 +29,38 @@ class Appointment(models.Model):
     time = models.TimeField()
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)  # Yeni
+    updated_at = models.DateTimeField(auto_now=True)      # Yeni
+    
+    # Onay/Red sebebi
+    status_note = models.TextField(blank=True, null=True)  # Yeni
+
+    def approve(self, note=""):
+        """Randevuyu onayla"""
+        self.status = 'approved'
+        self.status_note = note
+        self.save()
+    
+    def reject(self, note=""):
+        """Randevuyu reddet"""
+        self.status = 'rejected'
+        self.status_note = note
+        self.save()
+
+    def is_available(self):
+        """Randevu zamanı müsait mi kontrol et"""
+        # Mevcut clean mantığı buraya taşınabilir
+        try:
+            self.clean()
+            return True
+        except ValidationError:
+            return False
+    
+    @property
+    def end_time(self):
+        """Randevu bitiş zamanını hesapla"""
+        return add_minutes(self.time, self.service.duration)
+    
 
     def clean(self):
         """Hizmet süresine göre randevu çakışma ve uygunluk kontrolü"""
