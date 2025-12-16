@@ -7,7 +7,7 @@ from .serializers import AppointmentSerializer
 class AppointmentViewSet(viewsets.ModelViewSet):
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
